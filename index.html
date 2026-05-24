@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Infectiologie 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #1a202c;
+            font-size: 2rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .search-bar:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .group-card {
+            background: white;
+            padding: 25px 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+        .group-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #4299e1;
+        }
+        .group-card h3 {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        .group-card .count {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+        .detail-view {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .detail-header h2 {
+            color: #1a202c;
+            font-size: 1.8rem;
+        }
+        .back-btn {
+            padding: 10px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .back-btn:hover { background: #3182ce; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:hover { background: #f7fafc; }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-td { background: #bee3f8; color: #2c5282; }
+        .badge-stage { background: #c6f6d5; color: #22543d; }
+        .badge-astreinte { background: #feebc8; color: #7c2d12; }
+        .badge-simulation { background: #e9d8fd; color: #44337a; }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+            .group-card { padding: 20px 10px; }
+            .detail-header h2 { font-size: 1.4rem; }
+            table { font-size: 0.9rem; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Planning Infectiologie 2026</h1>
+        <p class="subtitle">Clique sur ton groupe pour voir ton planning détaillé</p>
+        
+        <div id="mainView">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Rechercher un groupe... ex: A1, B4, C7">
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #bee3f8;"></div>
+                    <span>TD</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #c6f6d5;"></div>
+                    <span>Stage</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #feebc8;"></div>
+                    <span>Astreinte</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e9d8fd;"></div>
+                    <span>Simulation</span>
+                </div>
+            </div>
+            
+            <div class="grid" id="groupGrid"></div>
+        </div>
+        
+        <div class="detail-view" id="detailView">
+            <div class="detail-header">
+                <h2 id="detailTitle"></h2>
+                <button class="back-btn" onclick="showMainView()">← Retour aux groupes</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Heure</th>
+                        <th>Activité</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const planning = {
+            "A1": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "19.05", heure: "14h30", activite: "Astreinte"},
+                {date: "20.05", heure: "09h00", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "10h30", activite: "Stage"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "09h00", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"},
+                {date: "18.06", heure: "14h00", activite: "Simulation"}
+            ],
+            "A2": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "14h30", activite: "Astreinte"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "09h00", activite: "Stage"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "10h30", activite: "Stage"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "09h00", activite: "Stage"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"},
+                {date: "16.06", heure: "14h00", activite: "Simulation"}
+            ],
+            "A3": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "09h00", activite: "Stage"},
+                {date: "21.05", heure: "14h30", activite: "Astreinte"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "10h30", activite: "Stage"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "09h30", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"},
+                {date: "15.06", heure: "14h00", activite: "Simulation"}
+            ],
+            "A4": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "24.05", heure: "14h30", activite: "Astreinte"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "09h30", activite: "Stage"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "11.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"},
+                {date: "14.06", heure: "14h00", activite: "Simulation"}
+            ],
+            "A5": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "09h30", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "14h30", activite: "Astreinte"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "10h30", activite: "Stage"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "11.06", heure: "09h00", activite: "Stage"},
+                {date: "11.06", heure: "14h00", activite: "Simulation"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "A6": [
+                {date: "19.05", heure: "08h30", activite: "TD - Épidémiologie"},
+                {date: "24.05", heure: "08h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "10h30", activite: "Stage"},
+                {date: "31.05", heure: "08h30", activite: "TD - Fièvre aiguë"},
+                {date: "31.05", heure: "14h30", activite: "Astreinte"},
+                {date: "02.06", heure: "08h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "09h00", activite: "Stage"},
+                {date: "07.06", heure: "08h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "10h30", activite: "Stage"},
+                {date: "09.06", heure: "08h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "14h00", activite: "Simulation"},
+                {date: "14.06", heure: "08h30", activite: "TD - Expo Sang"}
+            ],
+            "B1": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "09h30", activite: "Stage"},
+                {date: "01.06", heure: "14h30", activite: "Astreinte"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "09.06", heure: "14h00", activite: "Simulation"},
+                {date: "10.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "B2": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "09h00", activite: "Stage"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "02.06", heure: "14h30", activite: "Astreinte"},
+                {date: "03.06", heure: "10h30", activite: "Stage"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "09h00", activite: "Stage"},
+                {date: "08.06", heure: "14h00", activite: "Simulation"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "B3": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "09h00", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "09h00", activite: "Stage"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "14h30", activite: "Astreinte"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "07.06", heure: "14h00", activite: "Simulation"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "09h00", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "B4": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "14h30", activite: "Astreinte"},
+                {date: "04.06", heure: "09h30", activite: "Stage"},
+                {date: "04.06", heure: "14h00", activite: "Simulation"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "11.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "B5": [
+                {date: "19.05", heure: "09h30", activite: "TD - Épidémiologie"},
+                {date: "24.05", heure: "09h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "09h30", activite: "Stage"},
+                {date: "31.05", heure: "09h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "09h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "10h30", activite: "Stage"},
+                {date: "03.06", heure: "14h00", activite: "Simulation"},
+                {date: "07.06", heure: "09h30", activite: "TD - Antibiotiques"},
+                {date: "07.06", heure: "14h30", activite: "Astreinte"},
+                {date: "08.06", heure: "09h00", activite: "Stage"},
+                {date: "09.06", heure: "09h30", activite: "TD - Coqueluche"},
+                {date: "14.06", heure: "09h30", activite: "TD - Expo Sang"}
+            ],
+            "B6": [
+                {date: "19.05", heure: "08h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "08h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "08h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "09h00", activite: "Stage"},
+                {date: "02.06", heure: "08h30", activite: "TD - Ictère fébrile"},
+                {date: "02.06", heure: "14h00", activite: "Simulation"},
+                {date: "07.06", heure: "08h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "14h30", activite: "Astreinte"},
+                {date: "09.06", heure: "08h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "08h30", activite: "TD - Expo Sang"}
+            ],
+            "C1": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "09h30", activite: "Stage"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "14h00", activite: "Simulation"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "09h30", activite: "Stage"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "09.06", heure: "14h30", activite: "Astreinte"},
+                {date: "11.06", heure: "09h00", activite: "Stage"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"}
+            ],
+            "C2": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "10h30", activite: "Stage"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "31.05", heure: "14h00", activite: "Simulation"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "09h00", activite: "Stage"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "10h30", activite: "Stage"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "14h30", activite: "Astreinte"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"}
+            ],
+            "C3": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "14h00", activite: "Simulation"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "09h00", activite: "Stage"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "10h30", activite: "Stage"},
+                {date: "11.06", heure: "14h30", activite: "Astreinte"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"}
+            ],
+            "C4": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "09h00", activite: "Stage"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "24.05", heure: "14h00", activite: "Simulation"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "09h00", activite: "Stage"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "11.06", heure: "09h00", activite: "Stage"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"},
+                {date: "14.06", heure: "14h30", activite: "Astreinte"}
+            ],
+            "C5": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "21.05", heure: "10h30", activite: "Stage"},
+                {date: "21.05", heure: "14h00", activite: "Simulation"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "04.06", heure: "09h00", activite: "Stage"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "11.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"},
+                {date: "15.06", heure: "14h30", activite: "Astreinte"}
+            ],
+            "C6": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "20.05", heure: "14h00", activite: "Simulation"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "25.05", heure: "10h30", activite: "Stage"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "03.06", heure: "09h00", activite: "Stage"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "08.06", heure: "10h30", activite: "Stage"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"},
+                {date: "16.06", heure: "14h30", activite: "Astreinte"}
+            ],
+            "C7": [
+                {date: "19.05", heure: "10h30", activite: "TD - Épidémiologie"},
+                {date: "19.05", heure: "14h00", activite: "Simulation"},
+                {date: "20.05", heure: "10h30", activite: "Stage"},
+                {date: "24.05", heure: "10h30", activite: "TD - Exanthème"},
+                {date: "31.05", heure: "10h30", activite: "TD - Fièvre aiguë"},
+                {date: "01.06", heure: "09h00", activite: "Stage"},
+                {date: "02.06", heure: "10h30", activite: "TD - Ictère fébrile"},
+                {date: "07.06", heure: "10h30", activite: "TD - Antibiotiques"},
+                {date: "09.06", heure: "10h30", activite: "TD - Coqueluche"},
+                {date: "10.06", heure: "10h30", activite: "Stage"},
+                {date: "14.06", heure: "10h30", activite: "TD - Expo Sang"},
+                {date: "18.06", heure: "14h30", activite: "Astreinte"}
+            ]
+        };
+
+        function getBadgeClass(activite) {
+            if (activite.includes('TD')) return 'badge-td';
+            if (activite.includes('Stage')) return 'badge-stage';
+            if (activite.includes('Astreinte')) return 'badge-astreinte';
+            if (activite.includes('Simulation')) return 'badge-simulation';
+            return '';
+        }
+
+        function renderGroups(filter = '') {
+            const grid = document.getElementById('groupGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(planning).sort().forEach(group => {
+                if (filter && !group.toLowerCase().includes(filter.toLowerCase())) return;
+                
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.onclick = () => showDetail(group);
+                card.innerHTML = `
+                    <h3>${group}</h3>
+                    <div class="count">${planning[group].length} activités</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showDetail(group) {
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('detailView').style.display = 'block';
+            document.getElementById('detailTitle').textContent = `Planning ${group}`;
+            
+            const tbody = document.getElementById('detailTable');
+            tbody.innerHTML = '';
+            
+            const sorted = [...planning[group]].sort((a, b) => {
+                const dateA = a.date.split('.').reverse().join('');
+                const dateB = b.date.split('.').reverse().join('');
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                return a.heure.localeCompare(b.heure);
+            });
+            
+            sorted.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.heure}</td>
+                    <td><span class="badge ${getBadgeClass(item.activite)}">${item.activite}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showMainView() {
+            document.getElementById('mainView').style.display = 'block';
+            document.getElementById('detailView').style.display = 'none';
+            document.getElementById('searchBar').value = '';
+            renderGroups();
+        }
+
+        document.getElementById('searchBar').addEventListener('input', (e) => {
+            renderGroups(e.target.value);
+        });
+
+        renderGroups();
+    </script>
+</body>
+</html>
